@@ -7,9 +7,13 @@ const PaginaPerfil = () => {
 
   return (
     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-      <Text>Página de Perfil</Text>
+      <Text>Página de Perfil de Usuario</Text>
       <Button
-        title="Ir al Listado"
+        title="Ir a Inicio"
+        onPress={() => navigation.navigate('Inicio')}
+      />
+      <Button
+        title="Ir a Listado"
         onPress={() => navigation.navigate('Listado')}
       />
     </View>
