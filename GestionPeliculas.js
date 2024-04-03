@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, Text, Button, TextInput } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, Button, TextInput, FlatList, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import axios from 'axios';
 import { openDatabase } from 'expo-sqlite';
@@ -9,49 +9,104 @@ const db = openDatabase('db.db');
 const GestionPeliculas = () => {
   const navigation = useNavigation();
   const [movies, setMovies] = useState([]);
+  const [savedMovies, setSavedMovies] = useState([]);
   const [movieId, setMovieId] = useState('');
+  const [currentMovie, setCurrentMovie] = useState(null);
 
-  const token = 'eyJhbGciOiJSUzI1NiIsImtpZCI6ImJhNjI1OTZmNTJmNTJlZDQ0MDQ5Mzk2YmU3ZGYzNGQyYzY0ZjQ1M2UiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL3NlY3VyZXRva2VuLmdvb2dsZS5jb20vYWx0ZW4taHlicmlkLWFwaSIsImF1ZCI6ImFsdGVuLWh5YnJpZC1hcGkiLCJhdXRoX3RpbWUiOjE3MTIxNTMzMzIsInVzZXJfaWQiOiI5T2tLNW1SQnJ6WnRWNXphc1lNMzNVVFpRamYyIiwic3ViIjoiOU9rSzVtUkJyelp0VjV6YXNZTTMzVVRaUWpmMiIsImlhdCI6MTcxMjE1MzMzMiwiZXhwIjoxNzEyMTU2OTMyLCJlbWFpbCI6InhpYm92OTAwNzlAZXZpbXpvLmNvbSIsImVtYWlsX3ZlcmlmaWVkIjp0cnVlLCJmaXJlYmFzZSI6eyJpZGVudGl0aWVzIjp7ImVtYWlsIjpbInhpYm92OTAwNzlAZXZpbXpvLmNvbSJdfSwic2lnbl9pbl9wcm92aWRlciI6InBhc3N3b3JkIn19.Eaj52a4QFBG2x6JxyTIdmbhGz30a5tq05iXvo_Ad6PqMq2-Ozmwjl6GZT1ERxjzaz3ly4G80rSwtgk-dwzvTh-elF8PwKAx_O65Uw2K4k_mOix9ppIH0r6Ivs69po00pRFPOAwA0EUoYVTrzr5Vzb5oFrde2IcO0EuYGCwcaWG4JeVNAdd9ngzQQOr2Axy3xrv0BEUWb8wHeZEdkJcckVUuT2JeDeBDRI38Cs5z95NWLFR_ulgQIWoCwmXkw85vsX84FgY1-kPNehTY9ExdeVwIYMC5p9R3g8-vs4yV6S3u5JY6GPYHeJ06oTNJuWgnq0m6WzQeRS2J8y3VFT0MXEg';
+  const token = 'eyJhbGciOiJSUzI1NiIsImtpZCI6ImJhNjI1OTZmNTJmNTJlZDQ0MDQ5Mzk2YmU3ZGYzNGQyYzY0ZjQ1M2UiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL3NlY3VyZXRva2VuLmdvb2dsZS5jb20vYWx0ZW4taHlicmlkLWFwaSIsImF1ZCI6ImFsdGVuLWh5YnJpZC1hcGkiLCJhdXRoX3RpbWUiOjE3MTIxNTk3MTUsInVzZXJfaWQiOiI5T2tLNW1SQnJ6WnRWNXphc1lNMzNVVFpRamYyIiwic3ViIjoiOU9rSzVtUkJyelp0VjV6YXNZTTMzVVRaUWpmMiIsImlhdCI6MTcxMjE1OTcxNSwiZXhwIjoxNzEyMTYzMzE1LCJlbWFpbCI6InhpYm92OTAwNzlAZXZpbXpvLmNvbSIsImVtYWlsX3ZlcmlmaWVkIjp0cnVlLCJmaXJlYmFzZSI6eyJpZGVudGl0aWVzIjp7ImVtYWlsIjpbInhpYm92OTAwNzlAZXZpbXpvLmNvbSJdfSwic2lnbl9pbl9wcm92aWRlciI6InBhc3N3b3JkIn19.Cmw275MelRcDrT8CxUuaU6ZfsbdSGJwzUMjXQbCyxOGt76EljQ6cMqDv8RX3wZyQHWAZjOajkQRAHvRUXkWrErzDDZGlN9g-pSfAOCCh3rUp05s2BjHlUvyHeXupqtBzlZPoP0mUp7rYq-SEbeqNQ4OfWLBt1tIdWx17urZOrDc8YY-76bzqExPDtaArhpC0mLkejdcI6mYYNSZERMM0vGlFff6Hj78jwHwWLeTFBPIVaRtADrhur0TbhvvAxVz3o9VkTlI1kz1nBDQ7KVSTNxgliB8DwZOWuGhcCI03VssQJIHDxw-PeBJuD6cFDPSE4azz1K6rNumKy2nlD8O0IQ';
 
   const fetchMovies = async () => {
-    const config = {
-      method: 'get',
-      maxBodyLength: Infinity,
-      url: `https://api-w6avz2it7a-uc.a.run.app/movies/${movieId}`,
-      headers: { 
-        'Accept': 'application/json',
-        'Authorization': `Bearer ${token}`
-      }
-    };
-
     try {
-      const response = await axios.request(config);
-      const movie = response.data;
+      const response = await axios.get(`https://api-w6avz2it7a-uc.a.run.app/movies/${movieId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      setCurrentMovie(response.data);
+    } catch (error) {
+      console.error('Error fetching movie: ', error);
+    }
+  };
 
+  const initializeDatabase = () => {
+    db.transaction(tx => {
+      tx.executeSql(
+        'create table if not exists movies (id integer primary key not null, name text, rating real);'
+      );
+    });
+  };
+
+  const clearDatabase = () => {
+    db.transaction(tx => {
+      tx.executeSql(
+        'delete from movies;',
+        [],
+        () => console.log('Database cleared successfully'),
+        (_, error) => console.log('Error clearing database: ', error)
+      );
+    });
+  };
+
+  const fetchSavedMovies = () => {
+    db.transaction(tx => {
+      tx.executeSql(
+        'select * from movies;',
+        [],
+        (_, { rows: { _array } }) => setSavedMovies(_array),
+        (_, error) => console.log('Error fetching saved movies: ', error)
+      );
+    });
+  };
+
+  useEffect(() => {
+    clearDatabase();
+    initializeDatabase();
+    fetchSavedMovies();
+  }, []);
+
+  const saveCurrentMovie = () => {
+    if (currentMovie) {
       db.transaction(tx => {
         tx.executeSql(
-          'create table if not exists movies (id integer primary key not null, title text, rating integer);'
+          'insert into movies (name, rating) values (?, ?)',
+          [currentMovie.name, currentMovie.rating],
+          (_, { rowsAffected }) => {
+            if (rowsAffected > 0) {
+              Alert.alert('Éxito', 'La película se guardó correctamente');
+              fetchSavedMovies();
+            } else {
+              Alert.alert('Error', 'No se pudo guardar la película');
+            }
+          },
+          (_, error) => console.log('Error saving movie: ', error)
         );
-        tx.executeSql('insert into movies (title, rating) values (?, ?)', [movie.name, movie.rating]);
       });
-
-      setMovies([movie]);
-    } catch (error) {
-      console.error(error);
+    } else {
+      console.log('No movie to save');
     }
   };
 
   return (
     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-      <Text>Página de Perfil de Gestion de Peliculas</Text>
+      <Text>Página de Gestion de Películas</Text>
       <TextInput
         style={{ height: 40, borderColor: 'gray', borderWidth: 1 }}
-        onChangeText={text => setMovieId(text)}
+        onChangeText={setMovieId}
         value={movieId}
         placeholder="Enter movie ID"
       />
       <Button title="Mostrar Película" onPress={fetchMovies} />
-      {movies[0] && <Text>{`Nombre: ${movies[0].name}, Puntuación: ${movies[0].rating}`}</Text>}
+      {currentMovie && <Text>{`Nombre: ${currentMovie.name}, Puntuación: ${currentMovie.rating}`}</Text>}
+      <Button title="Guardar Película" onPress={saveCurrentMovie} />
+      <FlatList
+        data={savedMovies}
+        keyExtractor={item => item.id.toString()}
+        renderItem={({ item }) => (
+          <View>
+            <Text>{`Nombre: ${item.name}, Puntuación: ${item.rating}`}</Text>
+          </View>
+        )}
+      />
     </View>
   );
 };
