@@ -26,6 +26,7 @@ const TabNavigation = () => {
         },
       })}
       tabBarOptions={{
+        // Color de fondo de la barra de navegación, consta del color activo y el color inactivo
         activeTintColor: 'blue',
         inactiveTintColor: 'gray',
       }}
