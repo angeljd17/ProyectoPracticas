@@ -4,6 +4,7 @@ import Icon from 'react-native-vector-icons/Ionicons'; // Importa el icono que d
 import PaginaInicio from './PaginaInicio';
 import PaginaListado from './PaginaListado';
 import PaginaPerfil from './PaginaPerfil';
+import GestionPeliculas from './GestionPeliculas';
 
 const Tab = createBottomTabNavigator();
 
@@ -20,6 +21,8 @@ const TabNavigation = () => {
             iconName = focused ? 'list' : 'list-outline';
           } else if (route.name === 'Perfil') {
             iconName = focused ? 'person' : 'person-outline';
+          } else if (route.name === 'Películas') {
+            iconName = focused ? 'film' : 'film-outline'; // Ícono de películas
           }
 
           return <Icon name={iconName} size={size} color={color} />;
@@ -34,6 +37,7 @@ const TabNavigation = () => {
       <Tab.Screen name="Inicio" component={PaginaInicio} />
       <Tab.Screen name="Listado" component={PaginaListado} />
       <Tab.Screen name="Perfil" component={PaginaPerfil} />
+      <Tab.Screen name="Películas" component={GestionPeliculas} />
     </Tab.Navigator>
   );
 };
