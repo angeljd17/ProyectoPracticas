@@ -17,7 +17,7 @@ const TabNavigation = () => {
 
           if (route.name === 'Inicio') {
             iconName = focused ? 'home' : 'home-outline';
-          } else if (route.name === 'Listado') {
+          } else if (route.name === 'Lista') {
             iconName = focused ? 'list' : 'list-outline';
           } else if (route.name === 'Perfil') {
             iconName = focused ? 'person' : 'person-outline';
@@ -35,7 +35,7 @@ const TabNavigation = () => {
       }}
     >
       <Tab.Screen name="Inicio" component={PaginaInicio} />
-      <Tab.Screen name="Listado" component={PaginaListado} />
+      <Tab.Screen name="Lista" component={PaginaListado} />
       <Tab.Screen name="Perfil" component={PaginaPerfil} />
       <Tab.Screen name="Películas" component={GestionPeliculas} />
     </Tab.Navigator>

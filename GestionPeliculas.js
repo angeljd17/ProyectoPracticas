@@ -4,6 +4,7 @@ import { useNavigation } from '@react-navigation/native';
 import axios from 'axios';
 import { openDatabase } from 'expo-sqlite';
 
+
 const db = openDatabase('db.db');
 
 const GestionPeliculas = () => {
@@ -13,7 +14,7 @@ const GestionPeliculas = () => {
   const [movieId, setMovieId] = useState('');
   const [currentMovie, setCurrentMovie] = useState(null);
 
-  const token = 'eyJhbGciOiJSUzI1NiIsImtpZCI6ImJhNjI1OTZmNTJmNTJlZDQ0MDQ5Mzk2YmU3ZGYzNGQyYzY0ZjQ1M2UiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL3NlY3VyZXRva2VuLmdvb2dsZS5jb20vYWx0ZW4taHlicmlkLWFwaSIsImF1ZCI6ImFsdGVuLWh5YnJpZC1hcGkiLCJhdXRoX3RpbWUiOjE3MTIxNTk3MTUsInVzZXJfaWQiOiI5T2tLNW1SQnJ6WnRWNXphc1lNMzNVVFpRamYyIiwic3ViIjoiOU9rSzVtUkJyelp0VjV6YXNZTTMzVVRaUWpmMiIsImlhdCI6MTcxMjE1OTcxNSwiZXhwIjoxNzEyMTYzMzE1LCJlbWFpbCI6InhpYm92OTAwNzlAZXZpbXpvLmNvbSIsImVtYWlsX3ZlcmlmaWVkIjp0cnVlLCJmaXJlYmFzZSI6eyJpZGVudGl0aWVzIjp7ImVtYWlsIjpbInhpYm92OTAwNzlAZXZpbXpvLmNvbSJdfSwic2lnbl9pbl9wcm92aWRlciI6InBhc3N3b3JkIn19.Cmw275MelRcDrT8CxUuaU6ZfsbdSGJwzUMjXQbCyxOGt76EljQ6cMqDv8RX3wZyQHWAZjOajkQRAHvRUXkWrErzDDZGlN9g-pSfAOCCh3rUp05s2BjHlUvyHeXupqtBzlZPoP0mUp7rYq-SEbeqNQ4OfWLBt1tIdWx17urZOrDc8YY-76bzqExPDtaArhpC0mLkejdcI6mYYNSZERMM0vGlFff6Hj78jwHwWLeTFBPIVaRtADrhur0TbhvvAxVz3o9VkTlI1kz1nBDQ7KVSTNxgliB8DwZOWuGhcCI03VssQJIHDxw-PeBJuD6cFDPSE4azz1K6rNumKy2nlD8O0IQ';
+  const token = 'eyJhbGciOiJSUzI1NiIsImtpZCI6IjgwNzhkMGViNzdhMjdlNGUxMGMzMTFmZTcxZDgwM2I5MmY3NjYwZGYiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL3NlY3VyZXRva2VuLmdvb2dsZS5jb20vYWx0ZW4taHlicmlkLWFwaSIsImF1ZCI6ImFsdGVuLWh5YnJpZC1hcGkiLCJhdXRoX3RpbWUiOjE3MTIyMjc0NTEsInVzZXJfaWQiOiI5T2tLNW1SQnJ6WnRWNXphc1lNMzNVVFpRamYyIiwic3ViIjoiOU9rSzVtUkJyelp0VjV6YXNZTTMzVVRaUWpmMiIsImlhdCI6MTcxMjIyNzQ1MSwiZXhwIjoxNzEyMjMxMDUxLCJlbWFpbCI6InhpYm92OTAwNzlAZXZpbXpvLmNvbSIsImVtYWlsX3ZlcmlmaWVkIjp0cnVlLCJmaXJlYmFzZSI6eyJpZGVudGl0aWVzIjp7ImVtYWlsIjpbInhpYm92OTAwNzlAZXZpbXpvLmNvbSJdfSwic2lnbl9pbl9wcm92aWRlciI6InBhc3N3b3JkIn19.BUCD8TsJ_4dN0KKfFGVlVpGKZATU2hFptrHbKLX4mZWDVn6fZdVgwKwxgBKSzhwkXl1Z_ucbBDbnYrxeRKexSsyTusU3Aj1JGf5emBP3Gls0iG3IxlhNkpyyp3myw6TSDWbTpJHygsDiBBCMPjF0rWyNT1t6KR5H8vI3cu47YOjnG7DIbEtKTxolNGu9RanbalTleL_SbRKnqCBGr374YaEjofTCZ9BRy7U0XHql9jOoJNgw5fjc-oaOT_2i-y9ZJjFfzG5uf3KpsMINHprUrU3jNVUoRGF2LFiUhlOshO-FzXe7Nhk-frQv8npZ_KaTmjPSBbeWBtnityFVmXpcyQ';
 
   const fetchMovies = async () => {
     try {
@@ -93,11 +94,25 @@ const GestionPeliculas = () => {
         style={{ height: 40, borderColor: 'gray', borderWidth: 1 }}
         onChangeText={setMovieId}
         value={movieId}
-        placeholder="Enter movie ID"
+        placeholder="ID Pelicula"
       />
       <Button title="Mostrar Película" onPress={fetchMovies} />
       {currentMovie && <Text>{`Nombre: ${currentMovie.name}, Puntuación: ${currentMovie.rating}`}</Text>}
       <Button title="Guardar Película" onPress={saveCurrentMovie} />
+      <View
+  style={{
+    position: 'absolute',
+    left: 0,
+    bottom: 50, // Ajusta este valor según sea necesario
+    width: '50%', // Ajusta este valor para cambiar el ancho del botón
+    alignSelf: 'center' // Centra el botón horizontalmente
+  }}
+>
+  <Button
+    title="Ir a Inicio"
+    onPress={() => navigation.navigate('Inicio')} // Asegúrate de que 'PaginaInicio' es el nombre correcto de la ruta
+  />
+</View>
       <FlatList
         data={savedMovies}
         keyExtractor={item => item.id.toString()}

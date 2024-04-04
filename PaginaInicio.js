@@ -9,8 +9,8 @@ const PaginaInicio = () => {
     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
       <Text>Página de Inicio</Text>
       <Button
-        title="Ir al Listado"
-        onPress={() => navigation.navigate('Listado')}
+        title="Ir a la Lista de Películas"
+        onPress={() => navigation.navigate('Lista')}
       />
     </View>
   );
