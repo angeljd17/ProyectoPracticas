@@ -20,15 +20,14 @@ const PaginaListado = () => {
           Authorization: `Bearer ${token}`,
         },
       });
-      setData(prevData => [...prevData, ...response.data]);
+      setData(prevData => [...prevData, ...Object.values(response.data)]);
     } catch (error) {
       console.error('Error fetching movies: ', error);
     }
   };
 
   const handleMovieDetails = (movieId) => {
-    // Sumar 1 al ID para ajustar al formato de ID de la API
-    navigation.navigate('Detalles', { movieId: movieId - 1 });
+    navigation.navigate('Detalles', { movieId: movieId - 1 }); // Pasar el ID correctamente
   };
 
   const renderItem = ({ item }) => (
@@ -60,7 +59,7 @@ const PaginaListado = () => {
     <View style={styles.container}>
       <FlatList
         data={data}
-        keyExtractor={(item, index) => index.toString()}
+        keyExtractor={(item) => item.id.toString()} // Assuming 'id' is the unique identifier
         renderItem={renderItem}
         onEndReached={handleLoadMore}
         onEndReachedThreshold={0.1}
