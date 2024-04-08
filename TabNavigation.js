@@ -8,6 +8,8 @@ import GestionPeliculas from './GestionPeliculas';
 
 const Tab = createBottomTabNavigator();
 
+// Prueba para probar otra rama
+
 const TabNavigation = () => {
   return (
     <Tab.Navigator
