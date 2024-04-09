@@ -13,7 +13,7 @@ const Stack = createStackNavigator();
 
 const ListadoStack = () => (
   <Stack.Navigator>
-    <Stack.Screen name="Lista de películas" component={PaginaListado} />
+    <Stack.Screen name="Películas" component={PaginaListado} />
     <Stack.Screen name="Detalles" component={DetallePelicula} />
   </Stack.Navigator>
 );

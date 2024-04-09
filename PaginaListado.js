@@ -1,44 +1,52 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, FlatList, StyleSheet, Image, TouchableOpacity } from 'react-native';
+import { View, FlatList, StyleSheet, Image, TouchableOpacity, Text } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import axios from 'axios';
+import { fetchMovies } from './LlamadaApi'; // Importamos la función desde nuestro archivo api.js
 
 const PaginaListado = () => {
-  const [data, setData] = useState([]);
+  const [allMovies, setAllMovies] = useState([]); // Array para almacenar todas las películas
+  const [visibleMovies, setVisibleMovies] = useState([]); // Array para mostrar las películas en la lista
   const [page, setPage] = useState(1);
-  const token = 'Tu token aquí';
+  const [loading, setLoading] = useState(false);
   const navigation = useNavigation();
 
   useEffect(() => {
     loadMovies();
-  }, [page]);
+  }, []);
+
+  useEffect(() => {
+    setVisibleMovies(allMovies.slice(0, page * 6)); // Mostrar las películas de 6 en 6
+  }, [allMovies, page]);
 
   const loadMovies = async () => {
+    if (loading) return; // Evitar cargar más películas si ya se está cargando
+    setLoading(true);
     try {
-      const response = await axios.get(`https://api-w6avz2it7a-uc.a.run.app/movies?page=${page}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      setData(prevData => [...prevData, ...Object.values(response.data)]);
+      const moviesData = await fetchMovies(page); // Usamos la función para obtener los datos de la API
+      if (moviesData && Object.keys(moviesData).length > 0) {
+        setAllMovies(prevData => [...prevData, ...Object.values(moviesData)]);
+      } else {
+        console.error('Error: Empty or undefined data received from API');
+      }
     } catch (error) {
       console.error('Error fetching movies: ', error);
     }
+    setLoading(false);
   };
 
   const handleMovieDetails = (movieId) => {
-    navigation.navigate('Detalles', { movieId: movieId - 1 }); // Pasar el ID correctamente
+    navigation.navigate('Detalles', { movieId }); // Pasar el ID correctamente
   };
 
   const renderItem = ({ item }) => (
     <View style={styles.movieContainer}>
-      <TouchableOpacity onPress={() => handleMovieDetails(item.id)}>
+      <TouchableOpacity onPress={() => handleMovieDetails(item.id - 1)}>
         <Image source={{ uri: item.pictureUrl }} style={styles.movieImage} />
       </TouchableOpacity>
       <View style={styles.movieDetails}>
         <Text style={styles.movieName}>{item.name}</Text>
         <Text style={styles.movieInfo}>
-          Puntuación: {item.rating} | Duración: {item.duration} 
+          Puntuación: {item.rating} | Duración: {item.duration}
         </Text>
         <Text style={styles.movieDescription}>{item.description}</Text>
         <TouchableOpacity
@@ -52,17 +60,22 @@ const PaginaListado = () => {
   );
 
   const handleLoadMore = () => {
+    if (loading || allMovies.length === 0) {
+      return; // Evitar cargar más datos si ya se está cargando o no hay datos
+    }
+    // Cargar más películas al hacer scroll al final de la lista
     setPage(prevPage => prevPage + 1);
   };
 
   return (
     <View style={styles.container}>
       <FlatList
-        data={data}
-        keyExtractor={(item) => item.id.toString()} // Assuming 'id' is the unique identifier
+        data={visibleMovies}
+        keyExtractor={(item) => (item.id ? item.id.toString() : Math.random().toString())}
         renderItem={renderItem}
         onEndReached={handleLoadMore}
         onEndReachedThreshold={0.1}
+        ListFooterComponent={loading && <Text>Cargando...</Text>} // Mensaje de carga al final de la lista
       />
     </View>
   );

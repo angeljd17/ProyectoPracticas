@@ -3,11 +3,26 @@ import { View, Text, StyleSheet, Image, ScrollView, TouchableOpacity } from 'rea
 import axios from 'axios';
 import Icon from 'react-native-vector-icons/Ionicons';
 
+// Define la función para obtener detalles de una película específica
+const fetchMovieDetails = async (movieId) => {
+  try {
+    const token = 'Tu token aquí'; // Incluye tu token aquí
+    const response = await axios.get(`https://api-w6avz2it7a-uc.a.run.app/movies/${movieId}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching movie details: ', error);
+    throw error;
+  }
+};
+
 const DetallePelicula = ({ route }) => {
   const { movieId } = route.params;
   const [movieDetails, setMovieDetails] = useState(null);
-  const [userRating, setUserRating] = useState(0); // Estado para la calificación del usuario
-  const token = 'Tu token aquí';
+  const [userRating, setUserRating] = useState(0);
 
   useEffect(() => {
     loadMovieDetails();
@@ -15,12 +30,8 @@ const DetallePelicula = ({ route }) => {
 
   const loadMovieDetails = async () => {
     try {
-      const response = await axios.get(`https://api-w6avz2it7a-uc.a.run.app/movies/${movieId}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      setMovieDetails(response.data);
+      const movieData = await fetchMovieDetails(movieId); // Llama a la función para obtener los detalles de la película
+      setMovieDetails(movieData);
     } catch (error) {
       console.error('Error fetching movie details: ', error);
     }
@@ -31,6 +42,7 @@ const DetallePelicula = ({ route }) => {
   };
 
   const renderRatingBar = (rating, isUserRating) => {
+    // Código para renderizar la barra de calificación
     const maxRating = 5;
     const filledStars = isUserRating ? userRating : Math.round(rating) || 0;
     const emptyStars = maxRating - filledStars;
