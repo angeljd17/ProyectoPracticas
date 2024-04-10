@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, FlatList, StyleSheet, Image, TouchableOpacity, Text } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { fetchMovies } from './LlamadaApi'; // Importamos la función desde nuestro archivo api.js
+import { fetchMovies } from '../services/LlamadaApi';
 
 const PaginaListado = () => {
   const [allMovies, setAllMovies] = useState([]); // Array para almacenar todas las películas
@@ -35,12 +35,12 @@ const PaginaListado = () => {
   };
 
   const handleMovieDetails = (movieId) => {
-    navigation.navigate('Detalles', { movieId }); // Pasar el ID correctamente
+    navigation.navigate('Detalles', { movieId }); // Pasar el ID de la película en lugar del nombre
   };
 
   const renderItem = ({ item }) => (
     <View style={styles.movieContainer}>
-      <TouchableOpacity onPress={() => handleMovieDetails(item.id - 1)}>
+      <TouchableOpacity onPress={() => handleMovieDetails(item.id)}>
         <Image source={{ uri: item.pictureUrl }} style={styles.movieImage} />
       </TouchableOpacity>
       <View style={styles.movieDetails}>

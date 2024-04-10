@@ -1,27 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Image, ScrollView, TouchableOpacity } from 'react-native';
-import axios from 'axios';
+import { View, Text, StyleSheet, Image, ScrollView, ActivityIndicator, TouchableOpacity } from 'react-native';
+import { fetchMovies } from '../services/LlamadaApi'; // Importa la función para obtener todas las películas
 import Icon from 'react-native-vector-icons/Ionicons';
 
-// Define la función para obtener detalles de una película específica
-const fetchMovieDetails = async (movieId) => {
-  try {
-    const token = 'Tu token aquí'; // Incluye tu token aquí
-    const response = await axios.get(`https://api-w6avz2it7a-uc.a.run.app/movies/${movieId}`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-    return response.data;
-  } catch (error) {
-    console.error('Error fetching movie details: ', error);
-    throw error;
-  }
-};
-
 const DetallePelicula = ({ route }) => {
-  const { movieId } = route.params;
+  const { movieId } = route.params; // Obtener el ID de la película desde los parámetros de la ruta
   const [movieDetails, setMovieDetails] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [userRating, setUserRating] = useState(0);
 
   useEffect(() => {
@@ -30,10 +16,22 @@ const DetallePelicula = ({ route }) => {
 
   const loadMovieDetails = async () => {
     try {
-      const movieData = await fetchMovieDetails(movieId); // Llama a la función para obtener los detalles de la película
-      setMovieDetails(movieData);
+      const moviesData = await fetchMovies(); // Obtener todas las películas
+      if (moviesData && Object.keys(moviesData).length > 0) {
+        const selectedMovie = moviesData[movieId]; // Obtener la película por su ID
+        if (selectedMovie) {
+          setMovieDetails(selectedMovie); // Establecer los detalles de la película seleccionada
+        } else {
+          setError('Película no encontrada');
+        }
+      } else {
+        console.error('Error: Empty or undefined data received from API');
+      }
     } catch (error) {
-      console.error('Error fetching movie details: ', error);
+      console.error('Error fetching movies: ', error);
+      setError('Error al cargar los detalles de la película');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -42,7 +40,6 @@ const DetallePelicula = ({ route }) => {
   };
 
   const renderRatingBar = (rating, isUserRating) => {
-    // Código para renderizar la barra de calificación
     const maxRating = 5;
     const filledStars = isUserRating ? userRating : Math.round(rating) || 0;
     const emptyStars = maxRating - filledStars;
@@ -66,10 +63,26 @@ const DetallePelicula = ({ route }) => {
     );
   };
 
+  if (loading) {
+    return (
+      <View style={styles.container}>
+        <ActivityIndicator size="large" color="blue" />
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={styles.container}>
+        <Text>Error: {error}</Text>
+      </View>
+    );
+  }
+
   if (!movieDetails) {
     return (
       <View style={styles.container}>
-        <Text>Cargando detalles de la película...</Text>
+        <Text>No se encontraron detalles de la película</Text>
       </View>
     );
   }
@@ -112,6 +125,11 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 10,
   },
+  ratingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
   sectionTitle: {
     fontSize: 20,
     fontWeight: 'bold',
@@ -123,11 +141,6 @@ const styles = StyleSheet.create({
   },
   movieDescription: {
     fontSize: 16,
-    marginBottom: 10,
-  },
-  ratingContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
     marginBottom: 10,
   },
 });
