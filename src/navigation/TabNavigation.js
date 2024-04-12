@@ -37,11 +37,12 @@ const TabNavigation = () => {
 
           return <Icon name={iconName} size={size} color={color} />;
         },
+        tabBarActiveTintColor: 'blue',
+        tabBarInactiveTintColor: 'gray',
+        tabBarStyle: {
+          display: 'flex',
+        },
       })}
-      tabBarOptions={{
-        activeTintColor: 'blue',
-        inactiveTintColor: 'gray',
-      }}
     >
       <Tab.Screen name="Inicio" component={PaginaInicio} />
       <Tab.Screen name="Lista" component={ListadoStack} />
