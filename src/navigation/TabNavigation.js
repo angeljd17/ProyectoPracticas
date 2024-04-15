@@ -18,22 +18,19 @@ const ListadoStack = () => (
   </Stack.Navigator>
 );
 
+const navigationIcons = {
+  Inicio: ['home', 'home-outline'],
+  Lista: ['list', 'list-outline'],
+  Perfil: ['person', 'person-outline'],
+  Buscador: ['search', 'search-outline'],
+};
+
 const TabNavigation = () => {
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
         tabBarIcon: ({ focused, color, size }) => {
-          let iconName;
-
-          if (route.name === 'Inicio') {
-            iconName = focused ? 'home' : 'home-outline';
-          } else if (route.name === 'Lista') {
-            iconName = focused ? 'list' : 'list-outline';
-          } else if (route.name === 'Perfil') {
-            iconName = focused ? 'person' : 'person-outline';
-          } else if (route.name === 'Buscador') {
-            iconName = focused ? 'search' : 'search-outline';
-          }
+          const iconName = navigationIcons[route.name][focused ? 0 : 1];
 
           return <Icon name={iconName} size={size} color={color} />;
         },

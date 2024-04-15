@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, Image, ScrollView, ActivityIndicator, TouchableOpacity, StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { fetchMovies } from '../services/LlamadaApi';
 import Icon from 'react-native-vector-icons/Ionicons';
+import axios from '../services/axios';
 
 // Definir la función handleRatingPress fuera del componente
 const handleRatingPress = (rating, setUserRating) => {
@@ -18,31 +18,35 @@ const DetallePelicula = ({ route }) => {
   const [imageSize, setImageSize] = useState({ width: 200, height: 300 });
   const navigation = useNavigation();
 
-  useEffect(() => {
-    loadMovieDetails();
-  }, []);
+  const fetchMovieDetails = async (movieId) => {
+    try {
+      const response = await axios.get(`https://api-w6avz2it7a-uc.a.run.app/movies/${movieId}`);
+      const movieData = response.data; // Obtener detalles de la película
+      return movieData;
+    } catch (error) {
+      console.error('Error fetching movie details: ', error);
+      throw error;
+    }
+  };
 
   const loadMovieDetails = async () => {
     try {
-      const moviesData = await fetchMovies();
-      if (moviesData && Object.keys(moviesData).length > 0) {
-        const selectedMovie = moviesData[movieId];
-        if (selectedMovie) {
-          setMovieDetails(selectedMovie);
-        } else {
-          setError('Película no encontrada');
-        }
+      const movieData = await fetchMovieDetails(movieId); // Utilizamos la función fetchMovieDetails con movieId
+      if (movieData) {
+        setMovieDetails(movieData);
       } else {
-        console.error('Error: Empty or undefined data received from API');
+        setError('Película no encontrada');
       }
     } catch (error) {
-      console.error('Error fetching movies: ', error);
+      console.error('Error fetching movie details: ', error);
       setError('Error al cargar los detalles de la película');
     } finally {
       setLoading(false);
     }
   };
-
+  useEffect(() => {
+    loadMovieDetails();
+  }, []);
   const handleImagePress = () => {
     const newImageSize = imageSize.width === 200 ? { width: 300, height: 450 } : { width: 200, height: 300 };
     setImageSize(newImageSize);

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, FlatList, Image, TouchableOpacity, Text, ActivityIndicator } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { fetchMovies } from '../services/LlamadaApi';
+import axios from '../services/axios';
 
 const PaginaListado = () => {
   const [allMovies, setAllMovies] = useState([]);
@@ -9,13 +9,24 @@ const PaginaListado = () => {
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
   const navigation = useNavigation();
+  const pageSize = 6;
+
+  const fetchMovies = async (page) => {
+    try {
+      const response = await axios.get(`https://api-w6avz2it7a-uc.a.run.app/movies?page=${page}`);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching movies: ', error);
+      throw error;
+    }
+  };
 
   useEffect(() => {
     loadMovies();
   }, []);
 
   useEffect(() => {
-    setVisibleMovies(allMovies.slice(0, page * 6));
+    setVisibleMovies(allMovies.slice(0, page * pageSize));
   }, [allMovies, page]);
 
   const loadMovies = async () => {
@@ -64,17 +75,6 @@ const PaginaListado = () => {
       </View>
     </TouchableOpacity>
   );
-  
-
-  
-  
-  
-  
-  
-  
-  
-  
-  
 
   const handleLoadMore = () => {
     if (loading || allMovies.length === 0) return;
