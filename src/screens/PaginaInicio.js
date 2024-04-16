@@ -6,12 +6,19 @@ const PaginaInicio = () => {
   const navigation = useNavigation();
 
   return (
-    <View className="flex-1 justify-center items-center bg-blue-100">
+    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
       <TouchableOpacity
-        onPress={() => navigation.navigate('Lista')}
-        className="bg-blue-500 py-3 px-6 rounded-lg mb-4"
+        onPress={() => navigation.navigate('InicioSesion')} // Navega a la pantalla InicioSesion
+        style={{ marginBottom: 20, padding: 10, backgroundColor: 'blue', borderRadius: 5 }}
       >
-        <Text className="text-white font-bold">Ir a la Lista de Películas</Text>
+        <Text style={{ color: 'white', fontWeight: 'bold' }}>Iniciar Sesión</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        onPress={() => navigation.navigate('RegistroUsuario')} // Navega a la pantalla RegistroUsuario
+        style={{ padding: 10, backgroundColor: 'green', borderRadius: 5 }}
+      >
+        <Text style={{ color: 'white', fontWeight: 'bold' }}>Registrarse</Text>
       </TouchableOpacity>
     </View>
   );
