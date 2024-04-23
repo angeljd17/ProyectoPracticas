@@ -7,10 +7,11 @@ import PaginaPerfil from '../screens/PaginaPerfil';
 import GestionPeliculas from '../screens/GestionPeliculas';
 import DetallePelicula from '../screens/DetallePelicula';
 import PaginaListado from '../screens/PaginaListado';
-import InicioSesion from '../screens/InicioSesion';
-import PantallaDespuesLogin from '../screens/PantallaDespuesLogin';
-import RegistroUsuario from '../screens/RegistroUsuario'; // Importa la pantalla RegistroUsuario
-import VerificacionEmail from '../screens/VerificacionEmail'; // Importa la pantalla VerificacionEmail
+import InicioSesion from '../screens/authentication/InicioSesion';
+import PantallaDespuesLogin from '../screens/authentication/PantallaDespuesLogin';
+import RegistroUsuario from '../screens/authentication/RegistroUsuario'; // Importa la pantalla RegistroUsuario
+import VerificacionEmail from '../screens/authentication/VerificacionEmail'; // Importa la pantalla VerificacionEmail
+import ForgotPassword from '../screens/authentication/ForgotPassword';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -36,6 +37,7 @@ const InicioSesionStack = () => (
     <Stack.Screen name="PantallaDespuesLogin" component={PantallaDespuesLogin} />
     <Stack.Screen name="RegistroUsuario" component={RegistroUsuario} />
     <Stack.Screen name="VerificacionEmail" component={VerificacionEmail} />
+    <Stack.Screen name="ForgotPassword" component={ForgotPassword} />
   </Stack.Navigator>
 );
 

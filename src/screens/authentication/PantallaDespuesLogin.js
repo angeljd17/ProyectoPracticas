@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Button, ActivityIndicator, StyleSheet } from 'react-native';
+import { View, Text, Button, ActivityIndicator, StyleSheet, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { auth } from '../services/firebase'; // Importa la instancia de Firebase
+import { auth } from '../../services/firebase'; // Importa la instancia de Firebase
 
 const PantallaDespuesLogin = () => {
   const navigation = useNavigation();
@@ -11,11 +11,9 @@ const PantallaDespuesLogin = () => {
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((authUser) => {
       if (authUser) {
-        // User is signed in.
         setUser(authUser);
-        setLoading(false); // Set loading to false once user data is available
+        setLoading(false);
       } else {
-        // No user is signed in.
         navigation.navigate('InicioSesion');
       }
     });
@@ -27,6 +25,15 @@ const PantallaDespuesLogin = () => {
     };
   }, []);
 
+  const handleLogout = async () => {
+    try {
+      await auth.signOut();
+      navigation.navigate('InicioSesion');
+    } catch (error) {
+      console.error('Error al cerrar sesión:', error);
+    }
+  };
+
   return (
     <View style={styles.container}>
       {loading ? (
@@ -36,7 +43,9 @@ const PantallaDespuesLogin = () => {
           <Text style={styles.title}>Bienvenido</Text>
           <Text style={styles.text}>Email: {user.email}</Text>
           {user.displayName && <Text style={styles.text}>Nombre: {user.displayName}</Text>}
-          <Button title="Cerrar sesión" onPress={() => auth.signOut()} />
+          <TouchableOpacity onPress={handleLogout} style={styles.button}>
+            <Text style={styles.buttonText}>Cerrar sesión</Text>
+          </TouchableOpacity>
         </View>
       )}
     </View>
@@ -57,6 +66,19 @@ const styles = StyleSheet.create({
   text: {
     fontSize: 18,
     marginBottom: 10,
+  },
+  button: {
+    backgroundColor: 'red',
+    paddingVertical: 12,
+    paddingHorizontal: 50,
+    borderRadius: 8,
+    marginTop: 20,
+  },
+  buttonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
+    textAlign: 'center',
   },
 });
 
