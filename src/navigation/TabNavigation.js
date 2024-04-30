@@ -7,6 +7,11 @@ import PaginaPerfil from '../screens/PaginaPerfil';
 import GestionPeliculas from '../screens/GestionPeliculas';
 import DetallePelicula from '../screens/DetallePelicula';
 import PaginaListado from '../screens/PaginaListado';
+import InicioSesion from '../screens/authentication/InicioSesion';
+import PantallaDespuesLogin from '../screens/authentication/PantallaDespuesLogin';
+import RegistroUsuario from '../screens/authentication/RegistroUsuario'; // Importa la pantalla RegistroUsuario
+import VerificacionEmail from '../screens/authentication/VerificacionEmail'; // Importa la pantalla VerificacionEmail
+import ForgotPassword from '../screens/authentication/ForgotPassword';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -25,13 +30,23 @@ const navigationIcons = {
   Buscador: ['search', 'search-outline'],
 };
 
+const InicioSesionStack = () => (
+  <Stack.Navigator>
+    <Stack.Screen name="PaginaInicio" component={PaginaInicio} options={{ headerShown: false }} />
+    <Stack.Screen name="InicioSesion" component={InicioSesion} />
+    <Stack.Screen name="PantallaDespuesLogin" component={PantallaDespuesLogin} />
+    <Stack.Screen name="RegistroUsuario" component={RegistroUsuario} />
+    <Stack.Screen name="VerificacionEmail" component={VerificacionEmail} />
+    <Stack.Screen name="ForgotPassword" component={ForgotPassword} />
+  </Stack.Navigator>
+);
+
 const TabNavigation = () => {
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
         tabBarIcon: ({ focused, color, size }) => {
           const iconName = navigationIcons[route.name][focused ? 0 : 1];
-
           return <Icon name={iconName} size={size} color={color} />;
         },
         tabBarActiveTintColor: 'blue',
@@ -41,7 +56,7 @@ const TabNavigation = () => {
         },
       })}
     >
-      <Tab.Screen name="Inicio" component={PaginaInicio} />
+      <Tab.Screen name="Inicio" component={InicioSesionStack} />
       <Tab.Screen name="Lista" component={ListadoStack} />
       <Tab.Screen name="Perfil" component={PaginaPerfil} />
       <Tab.Screen name="Buscador" component={GestionPeliculas} />
