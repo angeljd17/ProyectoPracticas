@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { View, FlatList, Image, TouchableOpacity, Text, ActivityIndicator } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import axios from '../services/axios';
+import Icon from 'react-native-vector-icons/Ionicons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const PaginaListado = () => {
   const [allMovies, setAllMovies] = useState([]);
@@ -10,6 +12,8 @@ const PaginaListado = () => {
   const [loading, setLoading] = useState(false);
   const navigation = useNavigation();
   const pageSize = 6;
+  const [userName, setUserName] = useState('');
+  const [likedMovies, setLikedMovies] = useState([]);
 
   const fetchMovies = async (page) => {
     try {
@@ -21,8 +25,32 @@ const PaginaListado = () => {
     }
   };
 
+  const loadUserName = async () => {
+    try {
+      const storedUserName = await AsyncStorage.getItem('userName');
+      if (storedUserName !== null) {
+        setUserName(storedUserName);
+      }
+    } catch (error) {
+      console.error('Error loading user name:', error);
+    }
+  };
+
+  const loadLikedMovies = async () => {
+    try {
+      const likedMovieIds = await AsyncStorage.getItem('likedMovies');
+      if (likedMovieIds !== null) {
+        setLikedMovies(JSON.parse(likedMovieIds));
+      }
+    } catch (error) {
+      console.error('Error loading liked movies:', error);
+    }
+  };
+
   useEffect(() => {
+    loadUserName();
     loadMovies();
+    loadLikedMovies(); // Cargar los "likes" del usuario
   }, []);
 
   useEffect(() => {
@@ -35,7 +63,11 @@ const PaginaListado = () => {
     try {
       const moviesData = await fetchMovies(page);
       if (moviesData && Object.keys(moviesData).length > 0) {
-        setAllMovies(prevData => [...prevData, ...Object.values(moviesData)]);
+        const updatedMovies = Object.values(moviesData).map(movie => ({
+          ...movie,
+          liked: likedMovies.includes(movie.id), // Verificar si la película está marcada como "like"
+        }));
+        setAllMovies((prevData) => [...prevData, ...updatedMovies]);
       } else {
         console.error('Error: Empty or undefined data received from API');
       }
@@ -48,29 +80,105 @@ const PaginaListado = () => {
   const handleMovieDetails = (movieId) => {
     navigation.navigate('Detalles', { movieId });
   };
+
+  const handleLikePress = async (movieId) => {
+    try {
+      const likeMovieEndpoint = `https://api-w6avz2it7a-uc.a.run.app/movies/${movieId}/like`;
+  
+      // Verificar si la película ya tiene "like" del usuario
+      const alreadyLiked = likedMovies.includes(movieId);
+  
+      // Enviar la solicitud para dar/quitar like según corresponda
+      const requestData = { userId: userName, alreadyLiked };
+      const response = await axios.put(likeMovieEndpoint, requestData);
+  
+      if (response.status === 200) {
+        if (alreadyLiked) {
+          // Si ya le había dado like, quitar el like
+          const updatedLikedMovies = likedMovies.filter((id) => id !== movieId);
+          await AsyncStorage.setItem('likedMovies', JSON.stringify(updatedLikedMovies));
+          setLikedMovies(updatedLikedMovies);
+  
+          setAllMovies((prevMovies) =>
+            prevMovies.map((movie) =>
+              movie.id === movieId
+                ? {
+                    ...movie,
+                    liked: false,
+                    likes: movie.likes - 1,
+                  }
+                : movie
+            )
+          );
+          console.log('Like removed');
+        } else {
+          // Si no le había dado like, agregar el like
+          await AsyncStorage.setItem('likedMovies', JSON.stringify([...likedMovies, movieId]));
+          setLikedMovies((prevLiked) => [...prevLiked, movieId]);
+  
+          setAllMovies((prevMovies) =>
+            prevMovies.map((movie) =>
+              movie.id === movieId
+                ? {
+                    ...movie,
+                    liked: true,
+                    likes: movie.likes + 1,
+                  }
+                : movie
+            )
+          );
+          console.log('Like added');
+        }
+      } else {
+        console.error('Error al dar/quitar like a la película');
+      }
+    } catch (error) {
+      console.error('Error liking/unliking movie:', error);
+    }
+  };
+  
+  
+
   const renderItem = ({ item }) => (
-    <TouchableOpacity className="flex-row mb-8 border-b-2 pb-4 border-gray-300 items-start relative bg-white rounded-lg p-4">
-      <View className="flex-shrink-0">
-        <TouchableOpacity onPress={() => handleMovieDetails(item.id)}>
-          <Image
-            source={{ uri: item.pictureUrl }}
-            style={{ width: 100, height: 150, marginRight: 10, borderRadius: 8 }}
+    <TouchableOpacity
+      style={{
+        flexDirection: 'row',
+        marginBottom: 8,
+        borderBottomWidth: 2,
+        paddingBottom: 4,
+        borderBottomColor: 'gray',
+        alignItems: 'center',
+        backgroundColor: 'white',
+        borderRadius: 8,
+        padding: 8,
+      }}
+    >
+      <TouchableOpacity onPress={() => handleMovieDetails(item.id)}>
+        <Image
+          source={{ uri: item.pictureUrl }}
+          style={{ width: 100, height: 150, marginRight: 10, borderRadius: 8 }}
+        />
+      </TouchableOpacity>
+      <View style={{ flex: 1 }}>
+        <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 5 }}>{item.name}</Text>
+        <Text style={{ fontSize: 14, marginBottom: 5 }}>
+          Puntuación: {item.rating} | Duración: {item.duration}
+        </Text>
+        <Text style={{ fontSize: 14, marginBottom: 10 }}>{item.description}</Text>
+        <TouchableOpacity onPress={() => handleLikePress(item.id)} style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <Icon
+            name={likedMovies.includes(item.id) ? 'heart' : 'heart-outline'}
+            size={20}
+            color={likedMovies.includes(item.id) ? 'red' : 'gray'}
+            style={{ marginRight: 5 }}
           />
+          <Text>{item.likes}</Text>
         </TouchableOpacity>
-      </View>
-      <View className="flex-1 flex-col justify-center">
-        <View className="flex-1">
-          <Text className="text-lg font-bold mb-1">{item.name}</Text>
-          <Text className="text-sm mb-1">
-            Puntuación: {item.rating} | Duración: {item.duration}
-          </Text>
-          <Text className="text-sm mb-3">{item.description}</Text>
-        </View>
         <TouchableOpacity
-          className="bg-blue-500 text-white font-bold py-2 px-4 rounded-md self-start"
+          style={{ backgroundColor: 'blue', borderRadius: 5, padding: 8, marginTop: 10 }}
           onPress={() => handleMovieDetails(item.id)}
         >
-          <Text className="text-white">Ver Detalles</Text>
+          <Text style={{ color: 'white' }}>Ver Detalles</Text>
         </TouchableOpacity>
       </View>
     </TouchableOpacity>
@@ -78,11 +186,11 @@ const PaginaListado = () => {
 
   const handleLoadMore = () => {
     if (loading || allMovies.length === 0) return;
-    setPage(prevPage => prevPage + 1);
+    setPage((prevPage) => prevPage + 1);
   };
 
   return (
-    <View className="flex-1 p-4 bg-blue-100">
+    <View style={{ flex: 1, padding: 4, backgroundColor: '#f0f0f0' }}>
       <FlatList
         data={visibleMovies}
         keyExtractor={(item) => (item.id ? item.id.toString() : Math.random().toString())}

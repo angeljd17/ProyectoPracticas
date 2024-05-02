@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage'; // Importa AsyncStorage
 import { app } from '../../services/firebase'; // Importa la instancia de Firebase desde tu archivo firebase.js
 import { Ionicons } from '@expo/vector-icons';
 
@@ -41,10 +42,14 @@ const InicioSesion = () => {
       const userCredential = await auth.signInWithEmailAndPassword(email, password);
       console.log('Usuario autenticado:', userCredential.user);
       
+      // Guarda el email y el nombre del usuario al iniciar sesión
+      await AsyncStorage.setItem('userEmail', email);
+      await AsyncStorage.setItem('userName', userCredential.user.displayName || '');
+
       navigation.navigate('PantallaDespuesLogin');
     } catch (error) {
       console.error('Error al iniciar sesión:', error);
-      alert('Ocurrió un error al iniciar sesión. Por favor, verifica tus credenciales.');
+      Alert.alert('Error', 'Ocurrió un error al iniciar sesión. Por favor, verifica tus credenciales.');
     }
   };
 
