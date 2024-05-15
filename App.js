@@ -4,9 +4,11 @@ import TabNavigation from './src/navigation/TabNavigation';
 import { View, Text } from 'react-native';
 import messaging from '@react-native-firebase/messaging';
 import PushNotification from 'react-native-push-notification';
+import {PermissionsAndroid} from 'react-native';
 
 const App = () => {
   const [notification, setNotification] = useState(null);
+  PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS);
 
   useEffect(() => {
     const setupPushNotifications = async () => {

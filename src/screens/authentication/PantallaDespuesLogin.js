@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, Button, ActivityIndicator, StyleSheet, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { auth } from '../../services/firebase'; // Importa la instancia de Firebase
+import AsyncStorage from '@react-native-async-storage/async-storage'; // Importa AsyncStorage
 
 const PantallaDespuesLogin = () => {
   const navigation = useNavigation();
@@ -27,6 +28,11 @@ const PantallaDespuesLogin = () => {
 
   const handleLogout = async () => {
     try {
+      // Eliminar el correo y el nombre del usuario del AsyncStorage
+      await AsyncStorage.removeItem('userEmail');
+      await AsyncStorage.removeItem('userName');
+      
+      // Cerrar sesión en Firebase
       await auth.signOut();
       navigation.navigate('InicioSesion');
     } catch (error) {
