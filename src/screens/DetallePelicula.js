@@ -1,20 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import {
-  View,
-  Text,
-  Image,
-  ScrollView,
-  ActivityIndicator,
-  TouchableOpacity,
-  StyleSheet,
-  TextInput,
-  Modal,
-  Button,
-} from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import {View,Text,Image,ScrollView,ActivityIndicator,TouchableOpacity,TextInput,Modal,Button,Alert} from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import useSystemTheme from '../hooks/useSystemTheme'; // Importa el hook de sincronización del tema
+import { DetalleStyles } from '../styles/DetalleStyles';
+import { isLoggedInSignal } from '../services/AuthStore';
 
 const DetallePelicula = ({ route }) => {
   const { movieId } = route.params;
@@ -30,6 +21,15 @@ const DetallePelicula = ({ route }) => {
   const [showCommentModal, setShowCommentModal] = useState(false);
   const [userName, setUserName] = useState('');
   const [likedMovies, setLikedMovies] = useState([]);
+  const theme = useSystemTheme(); // Obtén el tema del sistema
+
+  // Define los colores según el tema
+  const darkBackgroundColor = '#333333';
+  const darkButtonColor = '#333333';
+  const darkTextColor = 'white'; // Color blanco para texto en tema oscuro
+  const lightBackgroundColor = 'white';
+  const lightButtonColor = 'white';
+  const lightTextColor = 'black';
 
   const fetchMovieDetails = async (movieId) => {
     try {
@@ -109,6 +109,11 @@ const DetallePelicula = ({ route }) => {
   };
 
   const handleAddComment = async () => {
+    if (!isLoggedInSignal.isLoggedIn) {
+      Alert.alert('Inicia sesión', 'Debes iniciar sesión para agregar comentarios.');
+      return;
+    }
+  
     try {
       if (userName.trim() === '' || userRating === 0 || commentText.trim() === '') {
         console.error('Error: Usuario, puntuación o comentario no válidos');
@@ -137,9 +142,13 @@ const DetallePelicula = ({ route }) => {
       console.error('Error sending rating and comment:', error);
     }
   };
-  
 
   const handleLikePress = async () => {
+    if (!isLoggedInSignal.isLoggedIn) {
+      Alert.alert('Inicia sesión', 'Debes iniciar sesión para dar like a las películas.');
+      return;
+    }
+  
     try {
       const likeMovieEndpoint = `https://api-w6avz2it7a-uc.a.run.app/movies/${movieId}/like`;
       const requestData = { userId: userName }; // Puedes ajustar los datos según lo necesites
@@ -166,8 +175,6 @@ const DetallePelicula = ({ route }) => {
       console.error('Error liking movie:', error);
     }
   };
-  
-  
   
   const handleRatingPress = (rating) => {
     setUserRating(rating);
@@ -200,9 +207,14 @@ const DetallePelicula = ({ route }) => {
 
   const renderComments = () => {
     return comments.length > 0 ? (
-      comments.map(comment => (
+      comments.map((comment) => (
         <View key={comment.id} style={styles.commentContainer}>
-          <Text style={styles.commentText}>{`${comment.userId}: ${comment.text}`}</Text>
+          <Text
+            style={[
+              styles.commentText,
+              { color: theme === 'dark' ? darkTextColor : lightTextColor },
+            ]}
+          >{`${comment.userId}: ${comment.text}`}</Text>
           <View style={[styles.flexRow, { alignItems: 'center' }]}>
             <Text style={styles.ratingText}>Rating: {comment.rating}</Text>
             {renderRatingBar(comment.rating, false)}
@@ -210,9 +222,12 @@ const DetallePelicula = ({ route }) => {
         </View>
       ))
     ) : (
-      <Text style={styles.commentText}>No hay comentarios aún.</Text>
+      <Text style={styles.commentText}>
+        No hay comentarios aún.
+      </Text>
     );
   };
+  
 
   if (loading) {
     return (
@@ -239,147 +254,145 @@ const DetallePelicula = ({ route }) => {
   }
 
   return (
-    <ScrollView contentContainerStyle={styles.scrollContainer}>
+    <ScrollView
+      contentContainerStyle={[
+        styles.scrollContainer,
+        { backgroundColor: theme === 'dark' ? darkBackgroundColor : lightBackgroundColor },
+      ]}
+    >
       <View style={styles.innerContainer}>
         <TouchableOpacity onPress={handleImagePress}>
           <Image source={{ uri: movieDetails.pictureUrl }} style={[styles.movieImage, imageSize]} />
         </TouchableOpacity>
-        <Text style={[styles.textXL, styles.fontBold, styles.mb5, styles.movieName]}>{movieDetails.name}</Text>
-        <Text style={styles.sectionTitle}>Puntuación Actual:</Text>
+        <Text
+          style={[
+            styles.textXL,
+            styles.fontBold,
+            styles.mb5,
+            styles.movieName,
+            { color: theme === 'dark' ? darkTextColor : lightTextColor },
+          ]}
+        >
+          {movieDetails.name}
+        </Text>
+        <Text
+          style={[
+            styles.sectionTitle,
+            { color: theme === 'dark' ? darkTextColor : lightTextColor },
+          ]}
+        >
+          Puntuación Actual:
+        </Text>
         {renderRatingBar(movieDetails.rating, false)}
-        <Text style={styles.sectionTitle}>Tu Puntuación:</Text>
+        <Text
+          style={[
+            styles.sectionTitle,
+            { color: theme === 'dark' ? darkTextColor : lightTextColor },
+          ]}
+        >
+          Tu Puntuación:
+        </Text>
         {renderRatingBar(userRating, true, handleRatingPress)}
-        <Text style={styles.movieInfo}>Duración: {movieDetails.duration}</Text>
-        <Text style={styles.movieInfo}>Categorías: {movieDetails.categories.join(', ')}</Text>
-        <Text style={[styles.textLG, styles.mb5, styles.movieDescription]}>{movieDetails.description}</Text>
-        <Text style={styles.movieInfo}>Actores: {movieDetails.actors.join(', ')}</Text>
-
+        <Text
+          style={[
+            styles.movieInfo,
+            { color: theme === 'dark' ? darkTextColor : lightTextColor },
+          ]}
+        >
+          Duración: {movieDetails.duration}
+        </Text>
+        <Text
+          style={[
+            styles.movieInfo,
+            { color: theme === 'dark' ? darkTextColor : lightTextColor },
+          ]}
+        >
+          Categorías: {movieDetails.categories.join(', ')}
+        </Text>
+        <Text
+          style={[
+            styles.textLG,
+            styles.mb5,
+            styles.movieDescription,
+            { color: theme === 'dark' ? darkTextColor : lightTextColor },
+          ]}
+        >
+          {movieDetails.description}
+        </Text>
+        <Text
+          style={[
+            styles.movieInfo,
+            { color: theme === 'dark' ? darkTextColor : lightTextColor },
+          ]}
+        >
+          Actores: {movieDetails.actors.join(', ')}
+        </Text>
+  
         {/* Comentarios */}
         <View style={styles.commentsContainer}>
-          <Text style={styles.sectionTitle}>Comentarios:</Text>
+          <Text
+            style={[
+              styles.sectionTitle,
+              { color: theme === 'dark' ? darkTextColor : lightTextColor },
+            ]}
+          >
+            Comentarios:
+          </Text>
           {renderComments()}
           <TextInput
-            style={styles.commentInput}
+            style={[
+              styles.commentInput,
+              { color: theme === 'dark' ? darkTextColor : lightTextColor },
+            ]}
+            placeholderTextColor={theme === 'dark' ? darkTextColor : lightTextColor}
             placeholder="Añadir comentario"
             value={commentText}
-            onChangeText={text => setCommentText(text)}
+            onChangeText={(text) => setCommentText(text)}
           />
         </View>
-
+  
         <Modal visible={showCommentModal} animationType="slide">
           <View style={styles.modalContainer}>
             <TextInput
               style={styles.commentInput}
               placeholder="Añadir comentario"
               value={commentText}
-              onChangeText={text => setCommentText(text)}
+              onChangeText={(text) => setCommentText(text)}
             />
             <Button title="Confirmar Reseña" onPress={handleAddComment} />
+            <Button title="Cancelar" onPress={() => setShowCommentModal(false)} />
           </View>
         </Modal>
+  
+        <TouchableOpacity
+        onPress={handleLikePress}
+        style={[
+          styles.likeButton,
+          { backgroundColor: theme === 'dark' ? darkButtonColor : lightButtonColor },
+          // Agrega el estilo para eliminar el borde
+          { borderWidth: 0 },
+        ]}
+      >
+        <Icon name={liked ? 'heart' : 'heart-outline'} size={24} color={liked ? 'red' : 'gray'} />
+        <Text
+          style={[
+            styles.likeText,
+            { color: theme === 'dark' ? darkTextColor : lightTextColor },
+          ]}
+        >
+          {likes}
+        </Text>
+      </TouchableOpacity>
 
-        <TouchableOpacity onPress={handleLikePress} style={styles.likeButton}>
-          <Icon name={liked ? 'heart' : 'heart-outline'} size={24} color={liked ? 'red' : 'gray'} />
-          <Text style={styles.likeText}>{likes}</Text>
-        </TouchableOpacity>
       </View>
     </ScrollView>
   );
-};
+  
+  
+};  
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  scrollContainer: {
-    flexGrow: 1,
-  },
-  innerContainer: {
-    paddingHorizontal: 16,
-    paddingVertical: 20,
-    alignItems: 'center',
-  },
-  movieImage: {
-    aspectRatio: 3 / 2,
-    resizeMode: 'contain',
-    marginBottom: 10,
-  },
-  textXL: {
-    fontSize: 24,
-  },
-  textLG: {
-    fontSize: 20,
-  },
-  fontBold: {
-    fontWeight: 'bold',
-  },
-  mb5: {
-    marginBottom: 5,
-  },
-  movieName: {
-    fontSize: 24,
-  },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginBottom: 5,
-  },
-  movieInfo: {
-    fontSize: 18,
-    marginBottom: 5,
-  },
-  movieDescription: {
-    fontSize: 16,
-    marginBottom: 10,
-  },
-  flexRow: {
-    flexDirection: 'row',
-  },
-  ratingContainer: {
-    marginBottom: 10,
-  },
-  commentsContainer: {
-    marginVertical: 10,
-  },
-  commentContainer: {
-    marginBottom: 10,
-  },
-  commentText: {
-    fontSize: 16,
-    marginBottom: 5,
-  },
-  ratingText: {
-    fontSize: 14,
-    color: 'gray',
-  },
-  commentInput: {
-    borderWidth: 1,
-    borderColor: 'gray',
-    borderRadius: 5,
-    padding: 10,
-    marginBottom: 10,
-  },
-  likeButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#f0f0f0',
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 20,
-    marginTop: 10,
-  },
-  likeText: {
-    marginLeft: 5,
-    fontSize: 18,
-  },
-  modalContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-  },
-});
+const styles = {
+  ...DetalleStyles,
+};
 
 export default DetallePelicula;
