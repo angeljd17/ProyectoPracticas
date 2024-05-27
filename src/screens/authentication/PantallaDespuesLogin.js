@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, ActivityIndicator, StyleSheet, TouchableOpacity, useColorScheme } from 'react-native';
+import { View, Text, ActivityIndicator, TouchableOpacity, useColorScheme } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { auth } from '../../services/firebase'; // Importa la instancia de Firebase
-import AsyncStorage from '@react-native-async-storage/async-storage'; // Importa AsyncStorage
-import { isLoggedInSignal } from '../../services/AuthStore'; // Importa la señal de inicio de sesión
+import { auth } from '../../services/firebase';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { isLoggedInSignal } from '../../services/AuthStore';
 
 const PantallaDespuesLogin = () => {
   const navigation = useNavigation();
@@ -30,16 +30,10 @@ const PantallaDespuesLogin = () => {
 
   const handleLogout = async () => {
     try {
-      // Eliminar el correo y el nombre del usuario del AsyncStorage
       await AsyncStorage.removeItem('userEmail');
       await AsyncStorage.removeItem('userName');
-      
-      // Cerrar sesión en Firebase
       await auth.signOut();
-  
-      // Establecer isLoggedInSignal en false
       isLoggedInSignal.isLoggedIn = false;
-  
       navigation.navigate('InicioSesion');
     } catch (error) {
       console.error('Error al cerrar sesión:', error);
@@ -47,7 +41,7 @@ const PantallaDespuesLogin = () => {
   };
 
   const handleGoToPerfil = () => {
-    navigation.navigate('PaginaPerfil');
+    navigation.navigate('Perfil', { screen: 'PerfilTopTabs' });
   };
 
   const isDarkMode = colorScheme === 'dark';
