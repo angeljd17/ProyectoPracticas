@@ -1,24 +1,29 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import useSystemTheme from '../hooks/useSystemTheme'; // Importa el hook de sincronización del tema
 
 const PaginaInicio = () => {
   const navigation = useNavigation();
+  const theme = useSystemTheme(); // Obtén el tema del sistema
+
+  // Color de fondo oscuro grisaceo
+  const darkBackgroundColor = '#333333';
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Bienvenido a Mi Aplicación</Text>
+    <View style={[styles.container, { backgroundColor: theme === 'dark' ? darkBackgroundColor : 'white' }]}>
+      <Text style={[styles.title, { color: theme === 'dark' ? 'white' : 'black' }]}>Para acceder a tu perfil necesitas iniciar sesión</Text>
 
       <TouchableOpacity
         onPress={() => navigation.navigate('InicioSesion')}
-        style={styles.buttonContainer}
+        style={[styles.buttonContainer, { backgroundColor: theme === 'dark' ? 'darkblue' : 'blue' }]}
       >
         <Text style={styles.buttonText}>Iniciar Sesión</Text>
       </TouchableOpacity>
 
       <TouchableOpacity
         onPress={() => navigation.navigate('RegistroUsuario')}
-        style={[styles.buttonContainer, { backgroundColor: 'green' }]}
+        style={[styles.buttonContainer, { backgroundColor: theme === 'dark' ? 'darkgreen' : 'green' }]}
       >
         <Text style={styles.buttonText}>Registrarse</Text>
       </TouchableOpacity>
@@ -32,7 +37,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 20,
-    backgroundColor: '#f0f0f0',
   },
   title: {
     fontSize: 24,
@@ -44,7 +48,6 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     paddingVertical: 12,
     paddingHorizontal: 24,
-    backgroundColor: 'blue',
     borderRadius: 8,
     width: '100%',
     alignItems: 'center',

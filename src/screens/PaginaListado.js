@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { View, FlatList, Image, TouchableOpacity, Text, ActivityIndicator } from 'react-native';
+import { View, FlatList, Image, TouchableOpacity, Text, ActivityIndicator, useColorScheme, RefreshControl, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import axios from '../services/axios';
 import Icon from 'react-native-vector-icons/Ionicons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { listadoStyles } from '../styles/ListadoStyles';
+import { isLoggedInSignal } from '../services/AuthStore';
 
 const PaginaListado = () => {
   const [allMovies, setAllMovies] = useState([]);
@@ -14,6 +16,8 @@ const PaginaListado = () => {
   const pageSize = 6;
   const [userName, setUserName] = useState('');
   const [likedMovies, setLikedMovies] = useState([]);
+  const colorScheme = useColorScheme();
+  const [refreshing, setRefreshing] = useState(false);
 
   const fetchMovies = async (page) => {
     try {
@@ -80,9 +84,16 @@ const PaginaListado = () => {
   const handleMovieDetails = (movieId) => {
     navigation.navigate('Detalles', { movieId });
   };
-
+  
   const handleLikePress = async (movieId) => {
+    const isLoggedIn = isLoggedInSignal.isLoggedIn; // Obtiene el valor actual de la señal
+  
     try {
+      if (!isLoggedIn) {
+        Alert.alert('Inicia sesión', 'Debes iniciar sesión para dar like a las películas.');
+        return;
+      }
+  
       const likeMovieEndpoint = `https://api-w6avz2it7a-uc.a.run.app/movies/${movieId}/like`;
   
       // Verificar si la película ya tiene "like" del usuario
@@ -137,21 +148,11 @@ const PaginaListado = () => {
     }
   };
   
-  
-
   const renderItem = ({ item }) => (
     <TouchableOpacity
-      style={{
-        flexDirection: 'row',
-        marginBottom: 8,
-        borderBottomWidth: 2,
-        paddingBottom: 4,
-        borderBottomColor: 'gray',
-        alignItems: 'center',
-        backgroundColor: 'white',
-        borderRadius: 8,
-        padding: 8,
-      }}
+    style={[
+      colorScheme === 'dark' ? listadoStyles.movieContainerDark : listadoStyles.movieContainerLight,
+    ]}
     >
       <TouchableOpacity onPress={() => handleMovieDetails(item.id)}>
         <Image
@@ -160,11 +161,30 @@ const PaginaListado = () => {
         />
       </TouchableOpacity>
       <View style={{ flex: 1 }}>
-        <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 5 }}>{item.name}</Text>
-        <Text style={{ fontSize: 14, marginBottom: 5 }}>
+        <Text
+          style={[
+            styles.movieTitle,
+            colorScheme === 'dark' ? styles.movieTitleDark : null,
+          ]}
+        >
+          {item.name}
+        </Text>
+        <Text
+          style={[
+            styles.movieInfo,
+            colorScheme === 'dark' ? styles.movieInfoDark : null,
+          ]}
+        >
           Puntuación: {item.rating} | Duración: {item.duration}
         </Text>
-        <Text style={{ fontSize: 14, marginBottom: 10 }}>{item.description}</Text>
+        <Text
+          style={[
+            styles.movieDescription,
+            colorScheme === 'dark' ? styles.movieDescriptionDark : null,
+          ]}
+        >
+          {item.description}
+        </Text>
         <TouchableOpacity onPress={() => handleLikePress(item.id)} style={{ flexDirection: 'row', alignItems: 'center' }}>
           <Icon
             name={likedMovies.includes(item.id) ? 'heart' : 'heart-outline'}
@@ -172,7 +192,14 @@ const PaginaListado = () => {
             color={likedMovies.includes(item.id) ? 'red' : 'gray'}
             style={{ marginRight: 5 }}
           />
-          <Text>{item.likes}</Text>
+          <Text
+            style={[
+              styles.likeCount,
+              colorScheme === 'dark' ? styles.likeCountDark : null,
+            ]}
+          >
+            {item.likes}
+          </Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={{ backgroundColor: 'blue', borderRadius: 5, padding: 8, marginTop: 10 }}
@@ -189,8 +216,20 @@ const PaginaListado = () => {
     setPage((prevPage) => prevPage + 1);
   };
 
+  const onRefresh = React.useCallback(() => {
+    setRefreshing(true);
+    setAllMovies([]);
+    setPage(1);
+    loadMovies();
+    setRefreshing(false);
+  }, []);
+
+  const styles = {
+    ...listadoStyles, // Importa los estilos del archivo separado
+  };
+
   return (
-    <View style={{ flex: 1, padding: 4, backgroundColor: '#f0f0f0' }}>
+    <View style={{ flex: 1, padding: 4, backgroundColor: colorScheme === 'dark' ? '#121212' : '#f0f0f0' }}>
       <FlatList
         data={visibleMovies}
         keyExtractor={(item) => (item.id ? item.id.toString() : Math.random().toString())}
@@ -198,6 +237,14 @@ const PaginaListado = () => {
         onEndReached={handleLoadMore}
         onEndReachedThreshold={0.1}
         ListFooterComponent={loading && <ActivityIndicator size="small" color="blue" />}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={['blue']}
+            tintColor={'blue'}
+          />
+        }
       />
     </View>
   );

@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import TabNavigation from './src/navigation/TabNavigation';
-import { View, Text } from 'react-native';
+import { View, Text, StatusBar } from 'react-native';
 import messaging from '@react-native-firebase/messaging';
 import PushNotification from 'react-native-push-notification';
-import {PermissionsAndroid} from 'react-native';
+import { PermissionsAndroid } from 'react-native';
+import useSystemTheme from './src/hooks/useSystemTheme';
 
 const App = () => {
   const [notification, setNotification] = useState(null);
@@ -54,8 +55,14 @@ const App = () => {
     setupPushNotifications();
   }, []);
 
+  const appTheme = useSystemTheme(); // Obtener el tema del sistema
+
   return (
     <NavigationContainer>
+      <StatusBar
+        backgroundColor={appTheme === 'dark' ? 'black' : 'white'} // Utiliza appTheme en lugar de theme
+        barStyle={appTheme === 'dark' ? 'light-content' : 'dark-content'} // Utiliza appTheme en lugar de theme
+      />
       <TabNavigation />
       {notification && (
         <View style={{ backgroundColor: 'blue', padding: 10, position: 'absolute', top: 0, left: 0, right: 0 }}>

@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Button, ActivityIndicator, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, ActivityIndicator, StyleSheet, TouchableOpacity, useColorScheme } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { auth } from '../../services/firebase'; // Importa la instancia de Firebase
 import AsyncStorage from '@react-native-async-storage/async-storage'; // Importa AsyncStorage
+import { isLoggedInSignal } from '../../services/AuthStore'; // Importa la señal de inicio de sesión
 
 const PantallaDespuesLogin = () => {
   const navigation = useNavigation();
+  const colorScheme = useColorScheme();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -34,58 +36,71 @@ const PantallaDespuesLogin = () => {
       
       // Cerrar sesión en Firebase
       await auth.signOut();
+  
+      // Establecer isLoggedInSignal en false
+      isLoggedInSignal.isLoggedIn = false;
+  
       navigation.navigate('InicioSesion');
     } catch (error) {
       console.error('Error al cerrar sesión:', error);
     }
   };
 
+  const handleGoToPerfil = () => {
+    navigation.navigate('PaginaPerfil');
+  };
+
+  const isDarkMode = colorScheme === 'dark';
+  const containerStyle = {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: isDarkMode ? '#333333' : 'white',
+  };
+  const titleStyle = {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 20,
+    color: isDarkMode ? 'white' : 'black',
+  };
+  const textStyle = {
+    fontSize: 18,
+    marginBottom: 10,
+    color: isDarkMode ? 'white' : 'black',
+  };
+  const buttonStyle = {
+    backgroundColor: 'red',
+    paddingVertical: 12,
+    paddingHorizontal: 50,
+    borderRadius: 8,
+    marginTop: 20,
+  };
+  const buttonTextStyle = {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
+    textAlign: 'center',
+  };
+
   return (
-    <View style={styles.container}>
+    <View style={containerStyle}>
       {loading ? (
         <ActivityIndicator size="large" color="#0000ff" />
       ) : (
         <View>
-          <Text style={styles.title}>Bienvenido</Text>
-          <Text style={styles.text}>Email: {user.email}</Text>
-          {user.displayName && <Text style={styles.text}>Nombre: {user.displayName}</Text>}
-          <TouchableOpacity onPress={handleLogout} style={styles.button}>
-            <Text style={styles.buttonText}>Cerrar sesión</Text>
+          <Text style={titleStyle}>Bienvenido</Text>
+          <Text style={textStyle}>Email: {user?.email}</Text>
+          {user?.displayName && <Text style={textStyle}>Nombre: {user.displayName}</Text>}
+          <TouchableOpacity onPress={handleLogout} style={[buttonStyle, { backgroundColor: isDarkMode ? 'darkred' : 'red' }]}>
+            <Text style={buttonTextStyle}>Cerrar sesión</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={handleGoToPerfil} style={[buttonStyle, { backgroundColor: isDarkMode ? 'darkblue' : 'blue', marginTop: 10 }]}>
+            <Text style={buttonTextStyle}>Ir a Perfil</Text>
           </TouchableOpacity>
         </View>
       )}
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 20,
-  },
-  text: {
-    fontSize: 18,
-    marginBottom: 10,
-  },
-  button: {
-    backgroundColor: 'red',
-    paddingVertical: 12,
-    paddingHorizontal: 50,
-    borderRadius: 8,
-    marginTop: 20,
-  },
-  buttonText: {
-    color: 'white',
-    fontSize: 16,
-    fontWeight: 'bold',
-    textAlign: 'center',
-  },
-});
 
 export default PantallaDespuesLogin;
