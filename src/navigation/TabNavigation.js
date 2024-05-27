@@ -2,8 +2,12 @@ import React, { useEffect } from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { createStackNavigator } from '@react-navigation/stack';
+import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
+import { useNavigation } from '@react-navigation/native';
+import useSystemTheme from '../hooks/useSystemTheme'; 
+
 import PaginaPerfil from '../screens/PaginaPerfil';
-import GestionPeliculas from '../screens/GestionPeliculas';
+import PaginaAjustes from '../screens/PaginaAjustes';
 import DetallePelicula from '../screens/DetallePelicula';
 import PaginaListado from '../screens/PaginaListado';
 import InicioSesion from '../screens/authentication/InicioSesion';
@@ -12,11 +16,11 @@ import PantallaDespuesLogin from '../screens/authentication/PantallaDespuesLogin
 import RegistroUsuario from '../screens/authentication/RegistroUsuario';
 import VerificacionEmail from '../screens/authentication/VerificacionEmail';
 import ForgotPassword from '../screens/authentication/ForgotPassword';
-import useSystemTheme from '../hooks/useSystemTheme'; 
-import { useNavigation } from '@react-navigation/native';
+import GestorDocumental from '../screens/GestorDocumental';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
+const TopTab = createMaterialTopTabNavigator();
 
 const ListadoStack = () => (
   <Stack.Navigator screenOptions={{ headerShown: false }}>
@@ -25,10 +29,25 @@ const ListadoStack = () => (
   </Stack.Navigator>
 );
 
+const PerfilTopTabs = () => (
+  <TopTab.Navigator>
+    <TopTab.Screen
+      name="PaginaPerfil"
+      component={PaginaPerfil}
+      options={{ tabBarLabel: 'Summary' }}
+    />
+    <TopTab.Screen
+      name="GestorDocumental"
+      component={GestorDocumental}
+      options={{ tabBarLabel: 'Documentos' }}
+    />
+  </TopTab.Navigator>
+);
+
 const PaginaPerfilStack = () => (
   <Stack.Navigator screenOptions={{ headerShown: false }}>
     <Stack.Screen name="PaginaInicio" component={PaginaInicio} />
-    <Stack.Screen name="PaginaPerfil" component={PaginaPerfil} />
+    <Stack.Screen name="PerfilTopTabs" component={PerfilTopTabs} />
     <Stack.Screen name="InicioSesion" component={InicioSesion} />
     <Stack.Screen name="PantallaDespuesLogin" component={PantallaDespuesLogin} />
     <Stack.Screen name="RegistroUsuario" component={RegistroUsuario} />
@@ -40,7 +59,7 @@ const PaginaPerfilStack = () => (
 const navigationIcons = {
   Lista: ['list', 'list-outline'],
   Perfil: ['person', 'person-outline'],
-  Buscador: ['search', 'search-outline'],
+  Ajustes: ['options', 'options-outline'],
 };
 
 const TabNavigation = () => {
@@ -54,7 +73,7 @@ const TabNavigation = () => {
 
   return (
     <Tab.Navigator
-      tabBarPosition="bottom" 
+      tabBarPosition="bottom"
       screenOptions={({ route }) => ({
         tabBarIcon: ({ focused, color, size }) => {
           const iconName = navigationIcons[route.name][focused ? 0 : 1];
@@ -79,18 +98,13 @@ const TabNavigation = () => {
         component={PaginaPerfilStack}
         options={{
           tabBarLabel: 'Perfil',
-          tabBarOnPress: (e) => {
-            // Navegar a la página de inicio al presionar el tab de perfil
-            e.preventDefault(); // Prevenir la acción predeterminada del tab
-            navigation.navigate('PaginaInicio');
-          },
         }}
       />
       <Tab.Screen
-        name="Buscador"
-        component={GestionPeliculas}
+        name="Ajustes"
+        component={PaginaAjustes}
         options={{
-          tabBarLabel: 'Buscador',
+          tabBarLabel: 'Ajustes',
         }}
       />
     </Tab.Navigator>

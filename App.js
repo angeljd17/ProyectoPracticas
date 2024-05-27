@@ -10,6 +10,7 @@ import useSystemTheme from './src/hooks/useSystemTheme';
 const App = () => {
   const [notification, setNotification] = useState(null);
   PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS);
+  PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE);
 
   useEffect(() => {
     const setupPushNotifications = async () => {
