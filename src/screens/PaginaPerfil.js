@@ -1,5 +1,15 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, Image, Alert, StyleSheet, TextInput } from 'react-native';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  Image,
+  Alert,
+  StyleSheet,
+  TextInput,
+  Animated,
+  Platform,
+} from 'react-native';
 import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { firestore, storage } from '../services/firebase'; // Importa storage desde firebase
@@ -13,6 +23,7 @@ const PaginaPerfil = () => {
   const [profileImage, setProfileImage] = useState(null);
   const [showGenderOptions, setShowGenderOptions] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
+  const [genderOpacity] = useState(new Animated.Value(0));
 
   const selectImage = () => {
     const options = {
@@ -65,10 +76,10 @@ const PaginaPerfil = () => {
       const blob = await response.blob();
       const imageRef = storage.ref().child(`${displayName}-${surname}`);
       await imageRef.put(blob);
-  
+
       // Obtener la URL de la imagen
       const imageUrl = await imageRef.getDownloadURL();
-  
+
       // Convertir la información del usuario en JSON
       const userInfo = JSON.stringify({
         displayName,
@@ -78,14 +89,14 @@ const PaginaPerfil = () => {
         dateOfBirth: dateOfBirth.toISOString(),
         profileImage: imageUrl, // Agregar la URL de la imagen al JSON
       });
-  
+
       // Guardar el JSON en el almacenamiento de Firebase
       const fileName = `${displayName}-${surname}.json`;
       const jsonRef = storage.ref().child(fileName);
-  
+
       // Subir el JSON como un archivo al almacenamiento
       await jsonRef.putString(userInfo);
-  
+
       Alert.alert('Éxito', 'Información guardada correctamente en Firebase Storage.');
     } catch (error) {
       console.error('Error al guardar información:', error);
@@ -101,12 +112,17 @@ const PaginaPerfil = () => {
   };
 
   const handleGenderPress = () => {
-    setShowGenderOptions(true);
+    setShowGenderOptions(!showGenderOptions);
+    Animated.timing(genderOpacity, {
+      toValue: showGenderOptions ? 0 : 1,
+      duration: 300,
+      useNativeDriver: true,
+    }).start();
   };
 
   const handleGenderSelect = (selectedGender) => {
     setGender(selectedGender);
-    setShowGenderOptions(false);
+    handleGenderPress();
   };
 
   const onChangeDate = (event, selectedDate) => {
@@ -135,7 +151,7 @@ const PaginaPerfil = () => {
       </TouchableOpacity>
 
       {showGenderOptions && (
-        <View style={styles.genderOptions}>
+        <Animated.View style={[styles.genderOptions, { opacity: genderOpacity }]}>
           <TouchableOpacity onPress={() => handleGenderSelect('Hombre')}>
             <Text style={styles.genderOption}>Hombre</Text>
           </TouchableOpacity>
@@ -145,7 +161,7 @@ const PaginaPerfil = () => {
           <TouchableOpacity onPress={() => handleGenderSelect('Otro')}>
             <Text style={styles.genderOption}>Otro</Text>
           </TouchableOpacity>
-        </View>
+        </Animated.View>
       )}
 
       <View style={styles.inputContainer}>
@@ -193,19 +209,21 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 20,
     alignItems: 'center',
-    backgroundColor: '#fff',
+    backgroundColor: '#f5f5f5',
   },
   profileImageContainer: {
     marginTop: 20,
     marginBottom: 20,
+    alignItems: 'center',
   },
   profileImage: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
+    width: 120,
+    height: 120,
+    borderRadius: 60,
     backgroundColor: '#ccc',
     justifyContent: 'center',
     alignItems: 'center',
+    overflow: 'hidden',
   },
   profileInitials: {
     fontSize: 36,
@@ -213,30 +231,34 @@ const styles = StyleSheet.create({
   },
   inputContainer: {
     width: '100%',
+    marginTop: 20,
   },
   input: {
-    marginTop: 10,
     marginBottom: 10,
     borderBottomWidth: 1,
     borderColor: '#ccc',
     padding: 10,
     fontSize: 16,
+    backgroundColor: '#fff',
+    borderRadius: 5,
   },
   saveButton: {
-    backgroundColor: 'blue',
+    backgroundColor: '#007bff',
     borderRadius: 5,
-    padding: 10,
+    padding: 15,
     marginTop: 20,
+    width: '100%',
     alignItems: 'center',
   },
   buttonText: {
-    color: 'white',
+    color: '#fff',
     fontSize: 16,
   },
   genderOptions: {
     position: 'absolute',
-    top: 100,
+    top: 120,
     left: 20,
+    right: 20,
     backgroundColor: '#fff',
     borderWidth: 1,
     borderColor: '#ccc',
@@ -246,7 +268,7 @@ const styles = StyleSheet.create({
   },
   genderOption: {
     fontSize: 16,
-    marginBottom: 10,
+    padding: 10,
   },
 });
 

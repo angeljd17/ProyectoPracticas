@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { View, FlatList, Image, TouchableOpacity, Text, ActivityIndicator, useColorScheme, RefreshControl, Alert } from 'react-native';
+import React, { useState, useEffect, useCallback } from 'react';
+import { View, FlatList, Image, TouchableOpacity, Text, ActivityIndicator, useColorScheme, RefreshControl, Alert, TextInput } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import axios from '../services/axios';
 import Icon from 'react-native-vector-icons/Ionicons';
@@ -12,10 +12,12 @@ const PaginaListado = () => {
   const [visibleMovies, setVisibleMovies] = useState([]);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   const navigation = useNavigation();
   const pageSize = 6;
   const [userName, setUserName] = useState('');
   const [likedMovies, setLikedMovies] = useState([]);
+  const [likeCount, setLikeCount] = useState(0);
   const colorScheme = useColorScheme();
   const [refreshing, setRefreshing] = useState(false);
 
@@ -44,7 +46,9 @@ const PaginaListado = () => {
     try {
       const likedMovieIds = await AsyncStorage.getItem('likedMovies');
       if (likedMovieIds !== null) {
-        setLikedMovies(JSON.parse(likedMovieIds));
+        const likedMoviesArray = JSON.parse(likedMovieIds);
+        setLikedMovies(likedMoviesArray);
+        setLikeCount(likedMoviesArray.length);
       }
     } catch (error) {
       console.error('Error loading liked movies:', error);
@@ -60,6 +64,18 @@ const PaginaListado = () => {
   useEffect(() => {
     setVisibleMovies(allMovies.slice(0, page * pageSize));
   }, [allMovies, page]);
+
+  useEffect(() => {
+    if (searchQuery) {
+      setVisibleMovies(
+        allMovies.filter((movie) =>
+          movie.name.toLowerCase().includes(searchQuery.toLowerCase())
+        )
+      );
+    } else {
+      setVisibleMovies(allMovies.slice(0, page * pageSize));
+    }
+  }, [searchQuery, allMovies, page]);
 
   const loadMovies = async () => {
     if (loading) return;
@@ -109,6 +125,7 @@ const PaginaListado = () => {
           const updatedLikedMovies = likedMovies.filter((id) => id !== movieId);
           await AsyncStorage.setItem('likedMovies', JSON.stringify(updatedLikedMovies));
           setLikedMovies(updatedLikedMovies);
+          setLikeCount(updatedLikedMovies.length);
   
           setAllMovies((prevMovies) =>
             prevMovies.map((movie) =>
@@ -126,6 +143,7 @@ const PaginaListado = () => {
           // Si no le había dado like, agregar el like
           await AsyncStorage.setItem('likedMovies', JSON.stringify([...likedMovies, movieId]));
           setLikedMovies((prevLiked) => [...prevLiked, movieId]);
+          setLikeCount(likedMovies.length + 1);
   
           setAllMovies((prevMovies) =>
             prevMovies.map((movie) =>
@@ -150,9 +168,9 @@ const PaginaListado = () => {
   
   const renderItem = ({ item }) => (
     <TouchableOpacity
-    style={[
-      colorScheme === 'dark' ? listadoStyles.movieContainerDark : listadoStyles.movieContainerLight,
-    ]}
+      style={[
+        colorScheme === 'dark' ? listadoStyles.movieContainerDark : listadoStyles.movieContainerLight,
+      ]}
     >
       <TouchableOpacity onPress={() => handleMovieDetails(item.id)}>
         <Image
@@ -216,7 +234,7 @@ const PaginaListado = () => {
     setPage((prevPage) => prevPage + 1);
   };
 
-  const onRefresh = React.useCallback(() => {
+  const onRefresh = useCallback(() => {
     setRefreshing(true);
     setAllMovies([]);
     setPage(1);
@@ -230,6 +248,18 @@ const PaginaListado = () => {
 
   return (
     <View style={{ flex: 1, padding: 4, backgroundColor: colorScheme === 'dark' ? '#121212' : '#f0f0f0' }}>
+      <View style={styles.toolbar}>
+        <TextInput
+          style={styles.searchInput}
+          placeholder="Buscar películas..."
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+        />
+        <View style={styles.likesContainer}>
+          <Icon name="heart" size={24} color="red" />
+          <Text style={styles.likesCount}>{likeCount}</Text>
+        </View>
+      </View>
       <FlatList
         data={visibleMovies}
         keyExtractor={(item) => (item.id ? item.id.toString() : Math.random().toString())}
